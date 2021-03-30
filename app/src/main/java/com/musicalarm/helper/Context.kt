@@ -88,7 +88,6 @@ fun Context.getDefaultAlarmUri(type: Int) =
 
 fun Context.startAlarmSound(context: Context, url: Uri) {
     player = MediaPlayer.create(context, url)
-    player!!.isLooping = true
     player!!.start()
 }
 
