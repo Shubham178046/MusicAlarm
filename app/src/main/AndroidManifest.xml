@@ -19,6 +19,7 @@
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
+
     <application
         android:allowBackup="true"
         android:hardwareAccelerated="false"
@@ -31,9 +32,11 @@
         android:theme="@style/Theme.MusicAlarm"
         android:usesCleartextTraffic="true">
         <activity android:name=".ui.DetailActivity"></activity>
-        <activity android:name=".ui.AlarmLandingPageActivity"  android:noHistory="true" android:excludeFromRecents="true"/>
         <activity
-            android:name=".ui.DaywiseAlarmActivity" />
+            android:name=".ui.AlarmLandingPageActivity"
+            android:excludeFromRecents="true"
+            android:noHistory="true" />
+        <activity android:name=".ui.DaywiseAlarmActivity" />
         <activity
             android:name=".ui.DaysActivity"
             android:hardwareAccelerated="true"
@@ -55,20 +58,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-       <service android:name=".service.LoadAlarmsService"/>
+
+        <service android:name=".service.LoadAlarmsService" />
+
         <receiver
             android:name=".service.LoadAlarmsReceiver"
             tools:ignore="Instantiatable" />
         <receiver android:name=".service.AlarmReceiver" />
-        <receiver android:name=".service.HideAlarmService"/>
-        <receiver
-            android:name=".service.BootReceiver">
+        <receiver android:name=".service.HideAlarmService" />
+        <receiver android:name=".service.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
