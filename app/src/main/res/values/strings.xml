@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Music Alarm</string>
+    <string name="sunday">Sunday</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="select_time">Select Time</string>
+    <string name="select_music">Select Music</string>
+    <string name="save">Save</string>
+    <string name="please_select_time">Please select time</string>
+    <string name="please_select_music">Please select music</string>
+    <string name="save_successfully">Save Successfully!!!</string>
+    <string name="time_expired">Time Expired</string>
+    <string name="swipe_right_to_dismiss">Swipe right to Dismiss, or left to Snooze.</string>
+    <string name="update_complete">Saved Sucessfully</string>
+    <string name="update_failed">Saved Failed</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="channel_name">Music Alarm</string>
+    <string name="delete_dialog_title">Confirm Delete Alarm</string>
+    <string name="delete_dialog_content">Are you sure you would like to delete this alarm?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="delete_complete">Alarm Deleted</string>
+    <string name="delete_failed">Delete Failed</string>
+</resources>

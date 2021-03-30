@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/grey"
+    tools:context=".ui.DetailActivity">
+
+    <TimePicker
+        android:id="@+id/edit_alarm_time_picker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:background="@color/white"
+        android:timePickerMode="spinner"
+        tools:targetApi="lollipop" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txtMusic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/transparent_rect"
+        android:text="@string/select_music"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"/>
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/edtLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/transparent_rect"
+        android:backgroundTint="@null"
+        android:ellipsize="end"
+        android:imeOptions="actionDone"
+        android:inputType="textNoSuggestions"
+        android:lines="1"
+        android:maxLines="1"
+        android:padding="10dp"
+        android:text="Enter Label"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        android:textSize="16sp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:background="@color/teal_200"
+        android:text="@string/save"
+        android:paddingLeft="50dp"
+        android:paddingEnd="50dp"
+        android:layout_gravity="center"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="50dp"/>
+
+</LinearLayout>
