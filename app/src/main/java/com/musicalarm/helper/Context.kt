@@ -1,41 +1,27 @@
 package com.musicalarm.helper
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.app.*
-import android.content.ContentResolver
-import android.content.Context
-import android.content.Intent
+import android.app.ActivityManager
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.*
 import android.content.pm.PackageManager
-import android.graphics.Color
-import android.media.AudioAttributes
-import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.Looper
-import android.os.PowerManager
+import android.os.IBinder
 import android.provider.MediaStore
-import android.text.SpannableString
-import android.text.style.RelativeSizeSpan
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.AnyRes
-import androidx.core.app.AlarmManagerCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
+import com.musicalarm.Services
 import com.musicalarm.model.Alarm
 import com.musicalarm.service.HideAlarmService
+import com.musicalarm.service.MusicService
+import com.musicalarm.service.MusicServices
 import com.musicalarm.util.Constants.ALARM_ID
-import com.musicalarm.util.Constants.ALARM_SOUND_TYPE_ALARM
 import com.musicalarm.util.Constants.ALARM_SOUND_TYPE_NOTIFICATION
-import com.musicalarm.util.Constants.DAY_MINUTES
-import com.musicalarm.util.Constants.DAY_SECONDS
-import com.musicalarm.util.Constants.FRIDAY_BIT
-import com.musicalarm.util.Constants.HOUR_SECONDS
-import com.musicalarm.util.Constants.MINUTE_SECONDS
-import com.musicalarm.util.Constants.MONDAY_BIT
-import com.musicalarm.util.Constants.OPEN_ALARMS_TAB_INTENT_ID
 import com.musicalarm.util.Constants.PERMISSION_CALL_PHONE
 import com.musicalarm.util.Constants.PERMISSION_CAMERA
 import com.musicalarm.util.Constants.PERMISSION_GET_ACCOUNTS
@@ -55,8 +41,10 @@ import java.io.File
 import java.util.*
 import kotlin.math.pow
 
-var player: MediaPlayer? = MediaPlayer()
 
+var player: MediaPlayer? = MediaPlayer()
+private lateinit var mService: MusicService
+private var mBound: Boolean = false
 
 fun Context.getPermissionString(id: Int) = when (id) {
     PERMISSION_READ_STORAGE -> Manifest.permission.READ_EXTERNAL_STORAGE
@@ -86,16 +74,79 @@ fun Context.hasPermission(permId: Int) = ContextCompat.checkSelfPermission(
 fun Context.getDefaultAlarmUri(type: Int) =
     RingtoneManager.getDefaultUri(if (type == ALARM_SOUND_TYPE_NOTIFICATION) RingtoneManager.TYPE_NOTIFICATION else RingtoneManager.TYPE_ALARM)
 
-fun Context.startAlarmSound(context: Context, url: Uri) {
-    player = MediaPlayer.create(context, url)
-    player!!.start()
+private val connection = object : ServiceConnection {
+
+    override fun onServiceConnected(className: ComponentName, service: IBinder) {
+        // We've bound to LocalService, cast the IBinder and get LocalService instance
+        val binder = service as MusicService.LocalBinder
+        mService = binder.getService()
+        mBound = true
+    }
+
+    override fun onServiceDisconnected(arg0: ComponentName) {
+        mBound = false
+    }
+}
+
+fun Context.startAlarmSound(context: Context, url: Uri, alarm: Alarm) {
+    MusicServices.launchLoadMusicServices(context, url, alarm)
+    /* val intent = Intent(this, MusicService::class.java)
+     intent.action = "com.musicalarm.action.PLAY"
+     intent.putExtra("uri", url)
+     intent.putExtra("alarm", alarm)
+     startService(intent)
+     context.applicationContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)*/
+    /* val intent = Intent(this, MusicReceiver::class.java)
+     intent.putExtra("uri", url)
+     intent.putExtra("alarm", alarm)
+     sendBroadcast(intent)*/
+    //startService(intent)
+    /* PendingIntent.getService(
+         context,
+         alarm.notificationId(),
+         intent,
+         PendingIntent.FLAG_UPDATE_CURRENT
+     )*/
+    /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         startForegroundService(intent)
+    } else {
+           startService(intent)
+    }*/
+    /* player = MediaPlayer.create(context, url)
+     player!!.setOnCompletionListener(object : MediaPlayer.OnCompletionListener {
+         override fun onCompletion(p0: MediaPlayer?) {
+             context.hideNotification(alarm.notificationId())
+             player!!.release()
+         }
+     })
+     player!!.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK)
+     val mHandler = Handler()
+     mHandler.post(object : Runnable {
+         override fun run() {
+             player!!.start()
+         }
+     })*/
+}
+
+ fun  Context.isMyServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
+    val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
+    for (service in manager!!.getRunningServices(Int.MAX_VALUE)) {
+        if (serviceClass.name == service.service.className) {
+            return true
+        }
+    }
+    return false
 }
 
 fun Context.stopAlarmSound() {
-    if (player != null) {
+    val intent = Intent(this, Services::class.java)
+    stopService(intent)
+    /*if (player != null) {
         player!!.stop()
-    }
+        player!!.release()
+    }*/
 }
+
 internal fun Context.getResourceUri(@AnyRes resourceId: Int): Uri = Uri.Builder()
     .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
     .authority(packageName)
@@ -128,10 +179,17 @@ fun Context.hideNotification(id: Int) {
         applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     manager.cancel(id)
 }
-fun Context.getHideAlarmPendingIntent(context: Context,alarm: Alarm): PendingIntent {
+
+fun Context.getHideAlarmPendingIntent(context: Context, alarm: Alarm): PendingIntent {
     val intent = Intent(this, HideAlarmService::class.java)
     intent.putExtra(ALARM_ID, alarm.notificationId())
-    return PendingIntent.getBroadcast(this, alarm.notificationId(), intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    return PendingIntent.getBroadcast(
+        this,
+        alarm.notificationId(),
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
 }
 
 fun getCurrentDayMinutes(): Int {
@@ -139,9 +197,8 @@ fun getCurrentDayMinutes(): Int {
     return calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
 }
 
-fun  Context.getfilename(context: Context,pat :String) :String
-{
-    var SongTitle: String ?=""
+fun Context.getfilename(context: Context, pat: String): String {
+    var SongTitle: String? = ""
     var contentResolver = context.getContentResolver()
     var cursor = contentResolver.query(
         Uri.fromFile(File(pat)),  // Uri
@@ -157,7 +214,7 @@ fun  Context.getfilename(context: Context,pat :String) :String
     } else {
         val Title: Int = cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)
         do {
-             SongTitle = cursor.getString(Title)
+            SongTitle = cursor.getString(Title)
 
         } while (cursor.moveToNext())
     }

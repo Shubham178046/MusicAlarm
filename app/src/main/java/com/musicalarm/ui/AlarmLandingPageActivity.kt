@@ -49,9 +49,9 @@ class AlarmLandingPageActivity : AppCompatActivity() {
             finish()
         }, maxDuration * 1000L)
         setupAlarmButtons()
-        if (isFrom) {
+       /* if (isFrom) {
             setupEffects()
-        }
+        }*/
     }
 
     private fun setupAlarmButtons() {

@@ -1,33 +1,31 @@
 package com.musicalarm.service
 
-import android.R.attr.name
 import android.app.*
 import android.app.AlarmManager.AlarmClockInfo
 import android.content.BroadcastReceiver
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
-import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
+import android.os.Vibrator
 import android.util.Log
-import androidx.annotation.AnyRes
 import androidx.annotation.NonNull
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.core.content.FileProvider
 import com.musicalarm.BuildConfig
 import com.musicalarm.R
-import com.musicalarm.helper.getHideAlarmPendingIntent
-import com.musicalarm.helper.getResourceUri
-import com.musicalarm.helper.startAlarmSound
+import com.musicalarm.Services
+import com.musicalarm.helper.*
 import com.musicalarm.model.Alarm
 import com.musicalarm.ui.AlarmLandingPageActivity.Companion.launchIntent
 import com.musicalarm.util.AlarmUtils
+import com.musicalarm.util.PrefManager
 import java.io.File
 import java.util.*
 
@@ -47,100 +45,118 @@ class AlarmReceiver : BroadcastReceiver() {
                 NullPointerException()
             )
             return
+        } else {
+            PrefManager.setAlarmData(context, alarm)
         }
-       /* val calendar = Calendar.getInstance()
-        val day = calendar[Calendar.DAY_OF_WEEK]
-        if (day == Alarm.MON) {
-            if (alarm.moN_SONG != null && !alarm.moN_SONG.equals("") && !alarm.moN_SONG.isNullOrEmpty()) {
-                path = alarm.moN_SONG
-            }
-        } else if (day == Alarm.TUES) {
-            if (alarm.tueS_SONG != null && !alarm.tueS_SONG.equals("") && !alarm.tueS_SONG.isNullOrEmpty()) {
-                path = alarm.tueS_SONG
-            }
-        } else if (day == Alarm.WED) {
-            if (alarm.weD_SONG != null && !alarm.weD_SONG.equals("") && !alarm.weD_SONG.isNullOrEmpty()) {
-                path = alarm.weD_SONG
-            }
-        } else if (day == Alarm.THURS) {
-            if (alarm.thruS_SONG != null && !alarm.thruS_SONG.equals("") && !alarm.thruS_SONG.isNullOrEmpty()) {
-                path = alarm.thruS_SONG
-            }
-        } else if (day == Alarm.FRI) {
-            if (alarm.frI_SONG != null && !alarm.frI_SONG.equals("") && !alarm.frI_SONG.isNullOrEmpty()) {
-                path = alarm.frI_SONG
-            }
-        } else if (day == Alarm.SAT) {
-            if (alarm.saT_SONG != null && !alarm.saT_SONG.equals("") && !alarm.saT_SONG.isNullOrEmpty()) {
-                path = alarm.saT_SONG
-            }
-        }*/
+        /* val calendar = Calendar.getInstance()
+         val day = calendar[Calendar.DAY_OF_WEEK]
+         if (day == Alarm.MON) {
+             if (alarm.moN_SONG != null && !alarm.moN_SONG.equals("") && !alarm.moN_SONG.isNullOrEmpty()) {
+                 path = alarm.moN_SONG
+             }
+         } else if (day == Alarm.TUES) {
+             if (alarm.tueS_SONG != null && !alarm.tueS_SONG.equals("") && !alarm.tueS_SONG.isNullOrEmpty()) {
+                 path = alarm.tueS_SONG
+             }
+         } else if (day == Alarm.WED) {
+             if (alarm.weD_SONG != null && !alarm.weD_SONG.equals("") && !alarm.weD_SONG.isNullOrEmpty()) {
+                 path = alarm.weD_SONG
+             }
+         } else if (day == Alarm.THURS) {
+             if (alarm.thruS_SONG != null && !alarm.thruS_SONG.equals("") && !alarm.thruS_SONG.isNullOrEmpty()) {
+                 path = alarm.thruS_SONG
+             }
+         } else if (day == Alarm.FRI) {
+             if (alarm.frI_SONG != null && !alarm.frI_SONG.equals("") && !alarm.frI_SONG.isNullOrEmpty()) {
+                 path = alarm.frI_SONG
+             }
+         } else if (day == Alarm.SAT) {
+             if (alarm.saT_SONG != null && !alarm.saT_SONG.equals("") && !alarm.saT_SONG.isNullOrEmpty()) {
+                 path = alarm.saT_SONG
+             }
+         }*/
         /*RingtoneManager.setActualDefaultRingtoneUri(context,RingtoneManager.TYPE_ALARM,
            Uri.parse(path))*/
-        if (alarm.alarM_SONG != null && !alarm.alarM_SONG.equals("") && !alarm.alarM_SONG.isNullOrEmpty()) {
-            path = alarm.alarM_SONG
-        }
-        var notification: Uri? = null
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (path != null && !path.equals("") && !path.isNullOrEmpty()) {
-                notification =
-                    FileProvider.getUriForFile(
-                        context!!,
-                        BuildConfig.APPLICATION_ID + ".provider",
-                        File(path!!)
-                    )
+        /*   if (alarm.alarM_SONG != null && !alarm.alarM_SONG.equals("") && !alarm.alarM_SONG.isNullOrEmpty()) {
+               path = alarm.alarM_SONG
+           }
+           var notification: Uri? = null
+           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+               if (path != null && !path.equals("") && !path.isNullOrEmpty()) {
+                   notification =
+                       FileProvider.getUriForFile(
+                           context!!,
+                           BuildConfig.APPLICATION_ID + ".provider",
+                           File(path!!)
+                       )
+               } else {
+                   notification = context.getResourceUri(R.raw.ring)
+               }
+           } else {
+               if (path != null && !path.equals("") && !path.isNullOrEmpty()) {
+                   notification = Uri.fromFile(File(path!!))
+               } else {
+                   notification = context.getResourceUri(R.raw.ring)
+               }
+           }
+           if (notification != null) {
+               context!!.startAlarmSound(context, notification, alarm)
+           }
+
+           val audioAttributes = AudioAttributes.Builder()
+               .setUsage(AudioAttributes.USAGE_ALARM)
+               .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+               .build()
+           val id = alarm.notificationId()
+           val manager: NotificationManager =
+               context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+           createNotificationChannel(context)
+           val builder: NotificationCompat.Builder =
+               NotificationCompat.Builder(context, CHANNEL_ID)
+           builder.setSmallIcon(R.drawable.ic_alarm_vector)
+           builder.setColor(ContextCompat.getColor(context, R.color.accent))
+           builder.setContentTitle(context.getString(R.string.app_name))
+           builder.setContentText(alarm.label)
+           builder.setTicker(alarm.label)
+           builder.setVibrate(LongArray(2) { 500 })
+           //  builder.setSound(Uri.parse(path))
+           builder.setContentIntent(
+               launchAlarmLandingPage(
+                   context,
+                   alarm
+               )
+           )
+           val dismissIntent = context.getHideAlarmPendingIntent(context, alarm)
+           builder.setAutoCancel(true)
+           builder.setPriority(Notification.PRIORITY_HIGH)
+           builder.addAction(
+               R.drawable.ic_cross_vector,
+               context.resources.getString(R.string.dismiss),
+               dismissIntent
+           )
+           builder.setDeleteIntent(dismissIntent)
+           //  builder.setSound(notification, AudioManager.STREAM_ALARM)
+           manager.notify(id, builder.build())*/
+
+        //Reset Alarm manually
+
+        //Reset Alarm manually
+        val intent = Intent(context, Services::class.java)
+        intent.action = "com.musicalarm.action.PLAY"
+        if (context.isMyServiceRunning(context, Services::class.java)) {
+            context.stopAlarmSound()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
             } else {
-                notification = context.getResourceUri(R.raw.ring)
+                context.startService(intent)
             }
         } else {
-            if (path != null && !path.equals("") && !path.isNullOrEmpty()) {
-                notification = Uri.fromFile(File(path!!))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
             } else {
-                notification = context.getResourceUri(R.raw.ring)
+                context.startService(intent)
             }
         }
-        if (notification != null) {
-            context!!.startAlarmSound(context, notification)
-        }
-
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-        val id = alarm.notificationId()
-        val manager: NotificationManager =
-            context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        createNotificationChannel(context)
-        val builder: NotificationCompat.Builder =
-            NotificationCompat.Builder(context, CHANNEL_ID)
-        builder.setSmallIcon(R.drawable.ic_alarm_vector)
-        builder.setColor(ContextCompat.getColor(context, R.color.accent))
-        builder.setContentTitle(context.getString(R.string.app_name))
-        builder.setContentText(alarm.label)
-        builder.setTicker(alarm.label)
-        builder.setVibrate(longArrayOf(1000, 500, 1000, 500, 1000, 500))
-      //  builder.setSound(Uri.parse(path))
-        builder.setContentIntent(
-            launchAlarmLandingPage(
-                context,
-                alarm
-            )
-        )
-        val dismissIntent = context.getHideAlarmPendingIntent(context, alarm)
-        builder.setAutoCancel(true)
-        builder.setPriority(Notification.PRIORITY_HIGH)
-        builder.addAction(
-            R.drawable.ic_cross_vector,
-            context.resources.getString(R.string.dismiss),
-            dismissIntent
-        )
-        builder.setDeleteIntent(dismissIntent)
-      //  builder.setSound(notification, AudioManager.STREAM_ALARM)
-        manager.notify(id, builder.build())
-
-        //Reset Alarm manually
-
-        //Reset Alarm manually
         setReminderAlarm(context, alarm)
     }
 
@@ -182,7 +198,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
-                ScheduleAlarm.with(context!!).schedule(alarm, pIntent)
+            ScheduleAlarm.with(context!!).schedule(alarm, pIntent)
         }
 
         fun setReminderAlarms(context: Context?, alarms: List<Alarm>) {
@@ -260,7 +276,10 @@ class AlarmReceiver : BroadcastReceiver() {
 
         private fun launchAlarmLandingPage(ctx: Context, alarm: Alarm): PendingIntent? {
             return PendingIntent.getActivity(
-                ctx, alarm.notificationId(), launchIntent(ctx,true), PendingIntent.FLAG_UPDATE_CURRENT
+                ctx,
+                alarm.notificationId(),
+                launchIntent(ctx, true),
+                PendingIntent.FLAG_UPDATE_CURRENT
             )
         }
     }

@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
@@ -20,6 +21,8 @@
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
 
+    <permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <application
         android:allowBackup="true"
         android:hardwareAccelerated="false"
@@ -60,12 +63,28 @@
         </activity>
 
         <service android:name=".service.LoadAlarmsService" />
+        <service
+            android:name=".Services"
+            android:enabled="true"
+            android:exported="false" />
 
         <receiver
             android:name=".service.LoadAlarmsReceiver"
             tools:ignore="Instantiatable" />
         <receiver android:name=".service.AlarmReceiver" />
         <receiver android:name=".service.HideAlarmService" />
+
+        <service
+            android:name=".service.MusicServices"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <!--<receiver
+            android:name=".service.MusicReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>-->
         <receiver android:name=".service.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
